@@ -129,6 +129,12 @@ namespace Crest
             _targets.RunLambda(buffer => TextureArrayHelpers.ClearToBlack(buffer));
         }
 
+        public override void ClearLodData()
+        {
+            base.ClearLodData();
+            _targets.RunLambda(buffer => TextureArrayHelpers.ClearToBlack(buffer));
+        }
+
         /// <summary>
         /// Validates the primary light.
         /// </summary>
