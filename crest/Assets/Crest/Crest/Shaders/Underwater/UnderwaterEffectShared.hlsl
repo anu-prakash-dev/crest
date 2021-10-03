@@ -5,8 +5,6 @@
 #ifndef CREST_UNDERWATER_EFFECT_SHARED_INCLUDED
 #define CREST_UNDERWATER_EFFECT_SHARED_INCLUDED
 
-half3 _AmbientLighting;
-half _DataSliceOffset;
 float2 _HorizonNormal;
 
 float4 DebugRenderOceanMask(const bool isOceanSurface, const bool isUnderwater, const float mask, const float3 sceneColour)
@@ -94,10 +92,12 @@ void GetOceanSurfaceAndUnderwaterData
 	inout float rawDepth,
 	inout bool isOceanSurface,
 	inout bool isUnderwater,
+	inout bool hasCaustics,
 	inout float sceneZ,
 	const float oceanDepthTolerance
 )
 {
+	hasCaustics = rawDepth != 0.0;
 	isOceanSurface = false;
 	isUnderwater = mask == UNDERWATER_MASK_BELOW_SURFACE;
 
@@ -116,7 +116,7 @@ void GetOceanSurfaceAndUnderwaterData
 	if (rawDepth < rawGeometryDepth && rawOceanDepth < rawGeometryDepth)
 	{
 		// Cancels out caustics.
-		isOceanSurface = true;
+		hasCaustics = false;
 		rawDepth = rawGeometryDepth;
 		// No need to multi-sample.
 		sceneZ = CrestLinearEyeDepth(rawDepth);
@@ -128,6 +128,7 @@ void GetOceanSurfaceAndUnderwaterData
 	if (rawDepth < rawOceanDepth + oceanDepthTolerance)
 	{
 		isOceanSurface = true;
+		hasCaustics = false;
 		rawDepth = rawOceanDepth;
 		sceneZ = CrestLinearEyeDepth(CREST_MULTILOAD_DEPTH(_CrestOceanMaskDepthTexture, positionSS, rawDepth));
 	}
@@ -152,15 +153,14 @@ half3 ApplyUnderwaterEffect
 	half3 sceneColour,
 	const half3 lightCol,
 	const float3 lightDir,
-	const float rawDepth,
 	const float sceneZ,
 	const float fogDistance,
 	const half3 view,
-	const bool isOceanSurface
+	const bool hasCaustics
 )
 {
 	half3 scatterCol = 0.0;
-	int sliceIndex = clamp(_DataSliceOffset, 0, _SliceCount - 2);
+	int sliceIndex = clamp(_CrestDataSliceOffset, 0, _SliceCount - 2);
 	{
 		// Offset slice so that we dont get high freq detail. But never use last lod as this has crossfading.
 		const float3 uv_slice = WorldToUV(_WorldSpaceCameraPos.xz, _CrestCascadeData[sliceIndex], sliceIndex);
@@ -169,7 +169,7 @@ half3 ApplyUnderwaterEffect
 #if _SHADOWS_ON
 		{
 			// Camera should be at center of LOD system so no need for blending (alpha, weights, etc). This might not be
-			// the case if there is large horizontal displacement, but the _DataSliceOffset should help by setting a
+			// the case if there is large horizontal displacement, but the _CrestDataSliceOffset should help by setting a
 			// large enough slice as minimum.
 			shadow = _LD_TexArray_Shadow.SampleLevel(LODData_linear_clamp_sampler, uv_slice, 0.0).x;
 			shadow = saturate(1.0 - shadow);
@@ -196,7 +196,7 @@ half3 ApplyUnderwaterEffect
 				shadow,
 				1.0, // SSS is not used for underwater yet. Calculated in SampleDisplacementsNormals which is costly.
 				view,
-				_AmbientLighting,
+				_CrestAmbientLighting,
 				lightDir,
 				lightCol,
 				true
@@ -205,7 +205,7 @@ half3 ApplyUnderwaterEffect
 	}
 
 #if _CAUSTICS_ON
-	if (rawDepth != 0.0 && !isOceanSurface)
+	if (hasCaustics)
 	{
 		ApplyCaustics
 		(
