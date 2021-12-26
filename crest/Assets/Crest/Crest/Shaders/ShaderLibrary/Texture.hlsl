@@ -2,6 +2,13 @@
 
 // This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
 
+#ifndef CREST_TEXTURE_INCLUDED
+#define CREST_TEXTURE_INCLUDED
+
+#include "../OceanGlobals.hlsl"
+#include "../OceanInputsDriven.hlsl"
+#include "../ShaderLibrary/FloatingOrigin.hlsl"
+
 namespace WaveHarmonic
 {
 	namespace Crest
@@ -22,15 +29,14 @@ namespace WaveHarmonic
 				in const half i_scale
 			)
 			{
-				// "texture" is a reserved word.
-				TiledTexture _texture;
-				_texture._texture = i_texture;
-				_texture._sampler = i_sampler;
-				_texture._scale = i_scale;
+				TiledTexture tiledTexture;
+				tiledTexture._texture = i_texture;
+				tiledTexture._sampler = i_sampler;
+				tiledTexture._scale = i_scale;
 				// Safely assume a square texture.
-				_texture._size = i_size.z;
-				_texture._texel = i_size.x;
-				return _texture;
+				tiledTexture._size = i_size.z;
+				tiledTexture._texel = i_size.x;
+				return tiledTexture;
 			}
 
 			half4 Sample(float2 uv)
@@ -42,6 +48,18 @@ namespace WaveHarmonic
 			{
 				return _texture.SampleLevel(_sampler, uv, lod);
 			}
+
+			float2 FloatingOriginOffset()
+			{
+				return _CrestFloatingOriginOffset.xz % TiledFloatingOriginDivisor(_scale, _size);
+			}
+
+			float2 ScaledFloatingOriginOffset(const CascadeParams i_cascadeData)
+			{
+				return _CrestFloatingOriginOffset.xz % TiledFloatingOriginDivisor(_scale * i_cascadeData._texelWidth, _size);
+			}
 		};
 	}
 }
+
+#endif // CREST_TEXTURE_INCLUDED

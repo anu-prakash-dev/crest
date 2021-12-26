@@ -13,6 +13,9 @@
 // C# code to check if any parameters are within the MAX_LOD_COUNT limits
 #define MAX_LOD_COUNT 15
 
+// The size of the largest LOD.
+#define CREST_LOD_SIZE 2048.0
+
 // How light is attenuated deep in water
 #define DEPTH_OUTSCATTER_CONSTANT 0.25
 

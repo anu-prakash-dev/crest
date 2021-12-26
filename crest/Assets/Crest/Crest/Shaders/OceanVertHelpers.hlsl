@@ -5,6 +5,8 @@
 #ifndef CREST_OCEAN_VERT_HELPERS_H
 #define CREST_OCEAN_VERT_HELPERS_H
 
+#include "./ShaderLibrary/FloatingOrigin.hlsl"
+
 // i_meshScaleAlpha is passed in as it is provided per tile and is set only for LOD0
 float ComputeLodAlpha(float3 i_worldPos, float i_meshScaleAlpha, in const CascadeParams i_cascadeData0)
 {
@@ -17,7 +19,7 @@ float ComputeLodAlpha(float3 i_worldPos, float i_meshScaleAlpha, in const Cascad
 	float lodAlpha = taxicab_norm / i_cascadeData0._scale - 1.0;
 
 	// LOD alpha is remapped to ensure patches weld together properly. Patches can vary significantly in shape (with
-	// strips added and removed), and this variance depends on the base vertex density of the mesh, as this defines the 
+	// strips added and removed), and this variance depends on the base vertex density of the mesh, as this defines the
 	// strip width.
 	lodAlpha = max((lodAlpha - _CrestLodAlphaBlackPointFade) / _CrestLodAlphaBlackPointWhitePointFade, 0.);
 
@@ -37,13 +39,13 @@ void SnapAndTransitionVertLayout(in const float i_meshScaleAlpha, in const Casca
 
 	// snap the verts to the grid
 	// The snap size should be twice the original size to keep the shape of the eight triangles (otherwise the edge layout changes).
-	io_worldPos.xz -= frac(UNITY_MATRIX_M._m03_m23 / GRID_SIZE_2) * GRID_SIZE_2; // caution - sign of frac might change in non-hlsl shaders
+	io_worldPos.xz -= frac(CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(UNITY_MATRIX_M._m03_m23) / GRID_SIZE_2) * GRID_SIZE_2; // caution - sign of frac might change in non-hlsl shaders
 
 	// compute lod transition alpha
 	o_lodAlpha = ComputeLodAlpha(io_worldPos, i_meshScaleAlpha, i_cascadeData0);
 
 	// now smoothly transition vert layouts between lod levels - move interior verts inwards towards center
-	float2 m = frac(io_worldPos.xz / GRID_SIZE_4); // this always returns positive
+	float2 m = frac(CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(io_worldPos.xz) / GRID_SIZE_4); // this always returns positive
 	float2 offset = m - 0.5;
 	// Check if vert is within one square from the center point which the verts move towards. the verts that need moving
 	// inwards should have a radius of 0.25, whereas the outer ring of verts will have radius 0.5. Pick half way between

@@ -40,6 +40,8 @@ namespace Crest
     [HelpURL(Internal.Constants.HELP_URL_BASE_USER + "other-features.html" + Internal.Constants.HELP_URL_RP + "#floating-origin")]
     public class FloatingOrigin : MonoBehaviour
     {
+        const string k_Keyword = "CREST_FLOATING_ORIGIN";
+
         /// <summary>
         /// The version of this asset. Can be used to migrate across versions. This value should
         /// only be changed when the editor upgrades the version.
@@ -49,8 +51,8 @@ namespace Crest
         int _version = 0;
 #pragma warning restore 414
 
-        [Tooltip("Use a power of 2 to avoid pops in ocean surface geometry."), SerializeField]
-        float _threshold = 16384f;
+        [Tooltip("Use a power of 2 to avoid pops in ocean surface geometry."), Min(512f), SerializeField]
+        public float _threshold = 16384f;
         [Tooltip("Set to zero to disable."), SerializeField]
         float _physicsThreshold = 1000.0f;
 
@@ -67,7 +69,7 @@ namespace Crest
 
         ParticleSystem.Particle[] _particleBuffer = null;
 
-        static readonly int sp_CrestFloatingOriginOffset = Shader.PropertyToID("_CrestFloatingOriginOffset");
+        public static readonly int sp_CrestFloatingOriginOffset = Shader.PropertyToID("_CrestFloatingOriginOffset");
 
         Vector3 _originOffset;
 
@@ -78,8 +80,18 @@ namespace Crest
             TeleportOriginThisFrame = Vector3.zero;
 
             var newOrigin = Vector3.zero;
-            if (Mathf.Abs(transform.position.x) > _threshold) newOrigin.x += transform.position.x;
-            if (Mathf.Abs(transform.position.z) > _threshold) newOrigin.z += transform.position.z;
+
+            if (Mathf.Abs(transform.position.x) > _threshold)
+            {
+                // Teleport by threshold value intervals to avoid popping.
+                newOrigin.x += Mathf.Floor(transform.position.x / _threshold) * _threshold;
+            }
+
+            if (Mathf.Abs(transform.position.z) > _threshold)
+            {
+                // Teleport by threshold value intervals to avoid popping.
+                newOrigin.z += Mathf.Floor(transform.position.z / _threshold) * _threshold;
+            }
 
             if (newOrigin != Vector3.zero)
             {
@@ -87,8 +99,20 @@ namespace Crest
             }
         }
 
+        void OnValidate()
+        {
+            // Must be power of two to avoid popping.
+            _threshold = Mathf.Pow(2f, Mathf.Round(Mathf.Log(_threshold, 2f)));
+        }
+
+        void OnEnable()
+        {
+            Shader.EnableKeyword(k_Keyword);
+        }
+
         void OnDisable()
         {
+            Shader.DisableKeyword(k_Keyword);
             Shader.SetGlobalVector(sp_CrestFloatingOriginOffset, Vector3.zero);
         }
 
@@ -168,9 +192,12 @@ namespace Crest
             if (OceanRenderer.Instance)
             {
                 OceanRenderer.Instance._lodTransform.SetOrigin(newOrigin);
+                OceanRenderer.Instance._lodDataShadow?.SetOrigin(newOrigin);
+                OceanRenderer.Instance._lodDataFoam?.SetOrigin(newOrigin);
+                OceanRenderer.Instance._lodDataDynWaves?.SetOrigin(newOrigin);
 
-                Shader.SetGlobalVector(sp_CrestFloatingOriginOffset, _originOffset - newOrigin);
                 _originOffset -= newOrigin;
+                Shader.SetGlobalVector(sp_CrestFloatingOriginOffset, _originOffset);
 
                 var fos = OceanRenderer.Instance.GetComponentsInChildren<IFloatingOrigin>();
                 foreach (var fo in fos)

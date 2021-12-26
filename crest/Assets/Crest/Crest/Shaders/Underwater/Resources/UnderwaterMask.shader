@@ -31,6 +31,8 @@ Shader "Hidden/Crest/Underwater/Ocean Mask"
 			// for VFACE
 			#pragma target 3.0
 
+			#pragma multi_compile _ CREST_FLOATING_ORIGIN
+
 			#pragma multi_compile_local _ CREST_WATER_VOLUME
 
 			#include "UnityCG.cginc"

@@ -44,6 +44,8 @@ namespace Crest
 
         PropertyWrapperMaterial[] _renderMaterial;
 
+        Vector3 _originOffset;
+
         readonly int sp_CenterPos = Shader.PropertyToID("_CenterPos");
         readonly int sp_Scale = Shader.PropertyToID("_Scale");
         readonly int sp_JitterDiameters_CurrentFrameWeights = Shader.PropertyToID("_JitterDiameters_CurrentFrameWeights");
@@ -282,6 +284,11 @@ namespace Crest
             // Intentionally blank to not flip buffers.
         }
 
+        public void SetOrigin(Vector3 newOrigin)
+        {
+            _originOffset = -newOrigin;
+        }
+
         public override void UpdateLodData()
         {
             // If disabled then we hit a failure state. Try and recover in edit mode by proceeding.
@@ -352,6 +359,7 @@ namespace Crest
                     lt._renderData[lodIdx].Current.Validate(0, SimName);
 #endif
 
+                    _renderMaterial[lodIdx].SetVector(FloatingOrigin.sp_CrestFloatingOriginOffset, _originOffset);
                     _renderMaterial[lodIdx].SetVector(sp_CenterPos, lt._renderData[lodIdx].Current._posSnapped);
                     var scale = OceanRenderer.Instance.CalcLodScale(lodIdx);
                     _renderMaterial[lodIdx].SetVector(sp_Scale, new Vector3(scale, 1f, scale));
@@ -366,6 +374,9 @@ namespace Crest
 
                     BufCopyShadowMap.Blit(Texture2D.blackTexture, _targets.Current, _renderMaterial[lodIdx].material, -1, lodIdx);
                 }
+
+                // Offset needed to sample the previous frame's data if there was an FO teleport/shift.
+                _originOffset = Vector3.zero;
 
 #if ENABLE_VR && ENABLE_VR_MODULE
                 // Disable for XR SPI otherwise input will not have correct world position.

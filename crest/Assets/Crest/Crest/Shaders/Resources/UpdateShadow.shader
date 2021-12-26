@@ -14,6 +14,8 @@ Shader "Hidden/Crest/Simulation/Update Shadow"
 
 			#pragma multi_compile_shadowcollector
 
+			#pragma multi_compile _ CREST_FLOATING_ORIGIN
+
 			// #pragma enable_d3d11_debug_symbols
 
 			#define CREST_SAMPLE_SHADOW_HARD
