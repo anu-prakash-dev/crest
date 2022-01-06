@@ -604,9 +604,9 @@ Shader "Crest/Ocean"
 				(
 					_FoamTiledTexture,
 					foam,
-					positionXZWSUndisplaced,
 					input.worldPos.xz,
-					0.0,
+					positionXZWSUndisplaced,
+					0.0, // Flow
 					n_pixel,
 					pixelZ,
 					sceneZ,

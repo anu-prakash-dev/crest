@@ -67,8 +67,8 @@ void ComputeFoam
 (
 	in const WaveHarmonic::Crest::TiledTexture i_texture,
 	half i_foam,
-	float2 i_worldXZUndisplaced,
 	float2 i_worldXZ,
+	float2 i_worldXZUndisplaced,
 	float2 i_flow,
 	half3 i_n,
 	float i_pixelZ,
@@ -97,8 +97,6 @@ void ComputeFoam
 
 #if _FLOW_ON
 	// Apply flow offset.
-	worldXZ.displaced0   -= i_flow;
-	worldXZ.displaced1   -= i_flow;
 	worldXZ.undisplaced0 -= i_flow;
 	worldXZ.undisplaced1 -= i_flow;
 #endif // _FLOW_ON
@@ -174,8 +172,8 @@ void ComputeFoamWithFlow
 	half3 o_bubbleCol2 = half3(0, 0, 0);
 	half4 o_whiteFoamCol2 = half4(0, 0, 0, 0);
 
-	ComputeFoam(i_texture, i_foam, i_worldXZUndisplaced, flow * sample1_offset, i_worldXZ, i_n, i_pixelZ, i_sceneZ, i_view, i_lightDir, i_shadow, lodVal, o_bubbleCol1, o_whiteFoamCol1, cascadeData0, cascadeData1);
-	ComputeFoam(i_texture, i_foam, i_worldXZUndisplaced, flow * sample2_offset, i_worldXZ, i_n, i_pixelZ, i_sceneZ, i_view, i_lightDir, i_shadow, lodVal, o_bubbleCol2, o_whiteFoamCol2, cascadeData0, cascadeData1);
+	ComputeFoam(i_texture, i_foam, i_worldXZ, i_worldXZUndisplaced, flow * sample1_offset, i_n, i_pixelZ, i_sceneZ, i_view, i_lightDir, i_shadow, lodVal, o_bubbleCol1, o_whiteFoamCol1, cascadeData0, cascadeData1);
+	ComputeFoam(i_texture, i_foam, i_worldXZ, i_worldXZUndisplaced, flow * sample2_offset, i_n, i_pixelZ, i_sceneZ, i_view, i_lightDir, i_shadow, lodVal, o_bubbleCol2, o_whiteFoamCol2, cascadeData0, cascadeData1);
 	o_bubbleCol = (sample1_weight * o_bubbleCol1) + (sample2_weight * o_bubbleCol2);
 	o_whiteFoamCol = (sample1_weight * o_whiteFoamCol1) + (sample2_weight * o_whiteFoamCol2);
 }
