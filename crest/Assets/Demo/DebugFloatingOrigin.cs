@@ -10,6 +10,8 @@ public class DebugFloatingOrigin : MonoBehaviour
     bool m_UpdatePosition = false;
     [SerializeField]
     float m_PositionOffset = 0f;
+    [SerializeField]
+    float m_Offset = 0.01f;
 
     void Start()
     {
@@ -34,7 +36,7 @@ public class DebugFloatingOrigin : MonoBehaviour
         }
 
         var position = transform.position;
-        position.x = position.z = Mathf.Floor(m_PositionOffset / m_FloatingOrigin._threshold) * m_FloatingOrigin._threshold + m_FloatingOrigin._threshold - 0.15f;
+        position.x = position.z = Mathf.Floor(m_PositionOffset / m_FloatingOrigin._threshold) * m_FloatingOrigin._threshold + m_FloatingOrigin._threshold - m_Offset;
         transform.position = position;
     }
 }
