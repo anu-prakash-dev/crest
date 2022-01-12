@@ -7,6 +7,8 @@
 #ifndef CREST_OCEAN_HELPERS_H
 #define CREST_OCEAN_HELPERS_H
 
+#include "./ShaderLibrary/FloatingOrigin.hlsl"
+
 #define SampleLod(i_lodTextureArray, i_uv_slice) (i_lodTextureArray.SampleLevel(LODData_linear_clamp_sampler, i_uv_slice, 0.0))
 #define SampleLodLevel(i_lodTextureArray, i_uv_slice, mips) (i_lodTextureArray.SampleLevel(LODData_linear_clamp_sampler, i_uv_slice, mips))
 
@@ -18,6 +20,12 @@ float2 WorldToUV(in float2 i_samplePos, in CascadeParams i_cascadeParams)
 float3 WorldToUV(in float2 i_samplePos, in CascadeParams i_cascadeParams, in float i_sliceIndex)
 {
 	float2 uv = (i_samplePos - i_cascadeParams._posSnapped) / (i_cascadeParams._texelWidth * i_cascadeParams._textureRes) + 0.5;
+	return float3(uv, i_sliceIndex);
+}
+
+float3 WorldToUVSource(in float2 i_samplePos, in CascadeParams i_cascadeParams, in float i_sliceIndex)
+{
+	float2 uv = (CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(i_samplePos) - CREST_WITH_FLOATING_ORIGIN_MODULUS(i_cascadeParams._posSnapped)) / (i_cascadeParams._texelWidth * i_cascadeParams._textureRes) + 0.5;
 	return float3(uv, i_sliceIndex);
 }
 

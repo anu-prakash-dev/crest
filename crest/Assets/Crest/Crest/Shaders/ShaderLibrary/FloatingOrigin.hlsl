@@ -7,8 +7,10 @@
 
 #if CREST_FLOATING_ORIGIN
 #define CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(position) (position - (_CrestFloatingOriginOffset.xz % CREST_LOD_SIZE))
+#define CREST_WITH_FLOATING_ORIGIN_MODULUS(position) (position % CREST_LOD_SIZE)
 #else
 #define CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(position) position
+#define CREST_WITH_FLOATING_ORIGIN_MODULUS(position) position
 #endif
 
 namespace WaveHarmonic

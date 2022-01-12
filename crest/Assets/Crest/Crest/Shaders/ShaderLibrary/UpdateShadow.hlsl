@@ -8,7 +8,6 @@
 #include "../OceanHelpersNew.hlsl"
 // Noise functions used for jitter.
 #include "../GPUNoise/GPUNoise.hlsl"
-#include "../ShaderLibrary/FloatingOrigin.hlsl"
 
 CBUFFER_START(CrestPerMaterial)
 // Settings._jitterDiameterSoft, Settings._jitterDiameterHard, Settings._currentFrameWeightSoft, Settings._currentFrameWeightHard
@@ -94,7 +93,7 @@ half2 Frag(Varyings input) : SV_Target
 	{
 		const int slice0 = _LD_SliceIndex + _CrestLodChange;
 		const CascadeParams cascadeData = _CrestCascadeDataSource[slice0];
-		const float3 uv = WorldToUV(CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(positionWS.xz), cascadeData, slice0);
+		const float3 uv = WorldToUVSource(positionWS.xz, cascadeData, slice0);
 		float depth;
 		{
 			float width; float height;
@@ -110,7 +109,7 @@ half2 Frag(Varyings input) : SV_Target
 		}
 		else if (slice0 + 1.0 < depth)
 		{
-			const float3 uvNextLod = WorldToUV(positionWS.xz, _CrestCascadeDataSource[slice0 + 1], slice0 + 1);
+			const float3 uvNextLod = WorldToUVSource(positionWS.xz, _CrestCascadeDataSource[slice0 + 1], slice0 + 1);
 			half2 r2 = abs(uvNextLod.xy - 0.5);
 			if (max(r2.x, r2.y) <= rMax)
 			{

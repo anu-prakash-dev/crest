@@ -14,7 +14,6 @@
 #include "../OceanGlobals.hlsl"
 #include "../OceanInputsDriven.hlsl"
 #include "../OceanHelpersNew.hlsl"
-#include "../ShaderLibrary/FloatingOrigin.hlsl"
 
 RWTexture2DArray<float2> _LD_TexArray_Target;
 
@@ -76,8 +75,8 @@ void UpdateDynWaves(uint3 id : SV_DispatchThreadID)
 	}
 
 	const half2 velocity = SampleLod(_LD_TexArray_Flow, uv_slice).xy;
-	const float2 worldPosXZFlowed = CREST_WITH_FLOATING_ORIGIN_LOD_OFFSET(worldPosXZ) - dt * velocity;
-	const float3 uv_source = WorldToUV(worldPosXZFlowed, _CrestCascadeDataSource[sliceIndexSource], sliceIndexSource);
+	const float2 worldPosXZFlowed = worldPosXZ - dt * velocity;
+	const float3 uv_source = WorldToUVSource(worldPosXZFlowed, _CrestCascadeDataSource[sliceIndexSource], sliceIndexSource);
 
 	// weighting for source position - weight 0 for off texture accesses to stop streaky artifacts
 	float2 distToEdge = min(uv_source.xy, 1.0 - uv_source.xy);
