@@ -51,7 +51,7 @@ namespace Crest
         int _version = 0;
 #pragma warning restore 414
 
-        [Tooltip("Use a power of 2 to avoid pops in ocean surface geometry."), Min(512f), SerializeField]
+        [Tooltip("Use a power of 2 to avoid pops in ocean surface geometry."), Min(4096f), SerializeField]
         public float _threshold = 16384f;
         [Tooltip("Set to zero to disable."), SerializeField]
         float _physicsThreshold = 1000.0f;
