@@ -378,6 +378,7 @@ namespace Crest
 
                 if (_underwaterEffectCommandBuffer != null)
                 {
+                    camera.RemoveCommandBuffer(CameraEvent.BeforeForwardAlpha, _underwaterEffectCommandBuffer);
                     camera.RemoveCommandBuffer(CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
                 }
             }
@@ -437,7 +438,7 @@ namespace Crest
             {
                 _editorCameras.Add(camera);
                 camera.AddCommandBuffer(CameraEvent.BeforeForwardAlpha, _oceanMaskCommandBuffer);
-                camera.AddCommandBuffer(CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
+                camera.AddCommandBuffer(_enableShaderAPI ? CameraEvent.BeforeForwardAlpha : CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
             }
 
             var oldCamera = _camera;
