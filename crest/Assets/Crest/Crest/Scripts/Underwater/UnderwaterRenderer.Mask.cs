@@ -19,6 +19,11 @@ namespace Crest
         // Shaders/Underwater/Resources/WaterVolumeGeometry.shader
         internal const int k_StencilValueVolume = 5;
 
+        // NOTE: Must match CREST_MASK_BELOW_SURFACE in OceanConstants.hlsl.
+        const float k_MaskBelowSurface = -1f;
+        // NOTE: Must match CREST_MASK_BELOW_SURFACE_CULLED in OceanConstants.hlsl.
+        const float k_MaskBelowSurfaceCull = -2f;
+
         internal const string k_ComputeShaderFillMaskArtefacts = "CrestFillMaskArtefacts";
         internal const string k_ComputeShaderKernelFillMaskArtefacts = "FillMaskArtefacts";
 
@@ -27,6 +32,7 @@ namespace Crest
         public static readonly int sp_CrestWaterVolumeFrontFaceTexture = Shader.PropertyToID("_CrestWaterVolumeFrontFaceTexture");
         public static readonly int sp_CrestWaterVolumeBackFaceTexture = Shader.PropertyToID("_CrestWaterVolumeBackFaceTexture");
         public static readonly int sp_FarPlaneOffset = Shader.PropertyToID("_FarPlaneOffset");
+        public static readonly int sp_MaskBelowSurface = Shader.PropertyToID("_MaskBelowSurface");
 
         internal enum VolumePass
         {
@@ -348,6 +354,10 @@ namespace Crest
                         {
                             chunk.BindOceanData(camera);
                         }
+
+                        chunk._mpb.SetFloat(sp_MaskBelowSurface, renderer.enabled ? k_MaskBelowSurface : k_MaskBelowSurfaceCull);
+                        renderer.SetPropertyBlock(chunk._mpb.materialPropertyBlock);
+
                         commandBuffer.DrawRenderer(renderer, oceanMaskMaterial, submeshIndex: 0, shaderPass: k_ShaderPassOceanSurfaceMask);
                     }
                     chunk._oceanDataHasBeenBound = false;

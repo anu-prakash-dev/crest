@@ -11,7 +11,7 @@ float4 DebugRenderOceanMask(const bool isOceanSurface, const bool isUnderwater, 
 {
 	if (isOceanSurface)
 	{
-		return float4(sceneColour * float3(mask == UNDERWATER_MASK_ABOVE_SURFACE, mask == UNDERWATER_MASK_BELOW_SURFACE, 0.0), 1.0);
+		return float4(sceneColour * float3(mask >= CREST_MASK_ABOVE_SURFACE, mask <= CREST_MASK_BELOW_SURFACE, 0.0), 1.0);
 	}
 	else
 	{
@@ -43,7 +43,7 @@ float MeniscusSampleOceanMask(const float mask, const int2 positionSS, const flo
 	float newMask = LOAD_TEXTURE2D_X(_CrestOceanMaskTexture, uv).r;
 #if CREST_WATER_VOLUME
 	// No mask means no underwater effect so ignore the value.
-	return (newMask == UNDERWATER_MASK_NONE ? mask : newMask);
+	return (newMask == CREST_MASK_NONE ? mask : newMask);
 #endif
 	return newMask;
 }
@@ -99,7 +99,7 @@ void GetOceanSurfaceAndUnderwaterData
 {
 	hasCaustics = rawDepth != 0.0;
 	isOceanSurface = false;
-	isUnderwater = mask == UNDERWATER_MASK_BELOW_SURFACE;
+	isUnderwater = mask <= CREST_MASK_BELOW_SURFACE;
 
 #if defined(CREST_WATER_VOLUME_HAS_BACKFACE) || defined(CREST_WATER_VOLUME_BACK_FACE)
 	const float rawGeometryDepth =
@@ -127,6 +127,10 @@ void GetOceanSurfaceAndUnderwaterData
 	// Merge ocean depth with scene depth.
 	if (rawDepth < rawOceanDepth + oceanDepthTolerance)
 	{
+#if CREST_UNDERWATER_BEFORE_TRANSPARENT
+		// Apply fog as ocean tile has been culled so it cannot handle the fog.
+		isUnderwater = mask <= CREST_MASK_BELOW_SURFACE_CULLED;
+#endif
 		isOceanSurface = true;
 		hasCaustics = false;
 		rawDepth = rawOceanDepth;

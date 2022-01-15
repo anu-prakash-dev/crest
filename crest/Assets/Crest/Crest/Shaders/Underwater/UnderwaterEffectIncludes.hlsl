@@ -104,7 +104,7 @@ bool CrestApplyUnderwaterFog(const float2 positionNDC, const float3 positionWS, 
 #endif // CREST_WATER_VOLUME
 
 	half mask = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CrestOceanMaskTexture, positionNDC).r;
-	if (mask != UNDERWATER_MASK_BELOW_SURFACE)
+	if (mask >= CREST_MASK_NO_FOG)
 	{
 		return false;
 	}

@@ -1178,6 +1178,7 @@ namespace Crest
 
             var definitelyUnderwater = false;
             var volumeExtinctionLength = 0f;
+            var isUnderwaterCullingEnabled = false;
 
             if (isUnderwaterActive)
             {
@@ -1189,6 +1190,7 @@ namespace Crest
                     var minimumFogDensity = Mathf.Min(Mathf.Min(density.x, density.y), density.z);
                     var underwaterCullLimit = Mathf.Clamp(_underwaterCullLimit, UNDERWATER_CULL_LIMIT_MINIMUM, UNDERWATER_CULL_LIMIT_MAXIMUM);
                     volumeExtinctionLength = -Mathf.Log(underwaterCullLimit) / minimumFogDensity;
+                    isUnderwaterCullingEnabled = true;
                 }
 
                 foreach (var body in WaterBody.WaterBodies)
@@ -1272,7 +1274,7 @@ namespace Crest
 
                 // Cull tiles the viewer cannot see through the underwater fog.
                 // Only run optimisation in play mode due to shared height above water.
-                if (!isCulled && isUnderwaterActive && Application.isPlaying)
+                if (!isCulled && isUnderwaterCullingEnabled)
                 {
                     isCulled = definitelyUnderwater &&
                         (Viewpoint.position - tile.Rend.bounds.ClosestPoint(Viewpoint.position)).magnitude >=
