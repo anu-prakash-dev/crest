@@ -24,6 +24,8 @@ Shader "Hidden/Crest/Underwater/Underwater Effect"
 
 	#pragma multi_compile _ CREST_UNDERWATER_BEFORE_TRANSPARENT
 
+	#pragma multi_compile _ CREST_SCENE_CAMERA_LIGHT_FIX
+
 	#include "UnityCG.cginc"
 	#include "Lighting.cginc"
 

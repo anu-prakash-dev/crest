@@ -114,6 +114,9 @@ namespace Crest
 
             _underwaterEffectCommandBuffer.Clear();
 
+            // Unity is not setting sun correctly both in scene view and before transparent pass.
+            _underwaterEffectCommandBuffer?.SetShaderKeyword("CREST_SCENE_CAMERA_LIGHT_FIX", _enableShaderAPI && _camera.cameraType == CameraType.SceneView);
+
             // Create a separate stencil buffer context by copying the depth texture.
             if (UseStencilBufferOnEffect)
             {

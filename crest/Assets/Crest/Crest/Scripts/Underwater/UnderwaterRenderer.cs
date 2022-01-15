@@ -264,6 +264,13 @@ namespace Crest
                 var oceanMaterial = OceanRenderer.Instance.OceanMaterial;
 
                 Shader.SetGlobalVector("_CrestDepthFogDensity", oceanMaterial.GetVector("_DepthFogDensity"));
+                if (_enableShaderAPI)
+                {
+                    // Unity is not setting the sun correctly both in scene view and before transparent pass. Use most
+                    // likely sun candidate.
+                    Shader.SetGlobalVector("_CrestWorldSpaceLightPos0", -RenderSettings.sun.transform.forward);
+                    Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color * RenderSettings.sun.intensity);
+                }
                 // We'll have the wrong color values if we do not use linear:
                 // https://forum.unity.com/threads/fragment-shader-output-colour-has-incorrect-values-when-hardcoded.377657/
                 Shader.SetGlobalColor("_CrestDiffuse", oceanMaterial.GetColor("_Diffuse").linear);
