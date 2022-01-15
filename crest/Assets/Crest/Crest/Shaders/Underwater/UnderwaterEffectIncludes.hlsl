@@ -93,7 +93,9 @@ bool CrestApplyUnderwaterFog(const float2 positionNDC, const float3 positionWS, 
 	}
 
 #if CREST_WATER_VOLUME_2D
-	// No fog if plane is not in view.
+	// No fog if plane is not in view. If we wanted to be consistent with the underwater shader, we should also check
+	// this for non fly-through volumes too, but being inside a non fly-through volume is undefined behaviour so we can
+	// save a variant.
 	if (rawFrontFaceZ == 0.0)
 	{
 		return false;
@@ -122,7 +124,12 @@ bool CrestApplyUnderwaterFog(const float2 positionNDC, const float3 positionWS, 
 	float fogDistance = CrestLinearEyeDepth(rawFogDistance);
 
 #if CREST_WATER_VOLUME
-	fogDistance -= CrestLinearEyeDepth(rawFrontFaceZ);
+#if CREST_WATER_VOLUME_HAS_BACKFACE
+	if (rawFrontFaceZ > 0.0)
+#endif
+	{
+		fogDistance -= CrestLinearEyeDepth(rawFrontFaceZ);
+	}
 #endif
 
 	half shadow = 1.0;
