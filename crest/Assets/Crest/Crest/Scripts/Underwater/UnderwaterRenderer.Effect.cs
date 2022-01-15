@@ -19,7 +19,9 @@ namespace Crest
         internal static readonly int sp_CrestWaterVolumeStencil = Shader.PropertyToID("_CrestWaterVolumeStencil");
         static readonly int sp_InvViewProjection = Shader.PropertyToID("_InvViewProjection");
         static readonly int sp_InvViewProjectionRight = Shader.PropertyToID("_InvViewProjectionRight");
+        static readonly int sp_CrestAmbientLighting = Shader.PropertyToID("_CrestAmbientLighting");
         static readonly int sp_HorizonNormal = Shader.PropertyToID("_HorizonNormal");
+        static readonly int sp_CrestDataSliceOffset = Shader.PropertyToID("_CrestDataSliceOffset");
 
         // If changed then see how mode is used to select the front-face pass and whether a mapping is required.
         // :UnderwaterRenderer.Mode
@@ -101,12 +103,14 @@ namespace Crest
                 _mode,
                 _camera,
                 _underwaterEffectMaterial,
+                _sphericalHarmonicsData,
                 _meniscus,
                 _firstRender || _copyOceanMaterialParamsEachFrame,
                 _debug._viewOceanMask,
                 _debug._viewStencil,
                 _filterOceanData,
-                ref _currentOceanMaterial
+                ref _currentOceanMaterial,
+                _enableShaderAPI
             );
 
             // Call after UpdatePostProcessMaterial as it copies material from ocean which will overwrite this.
@@ -239,16 +243,41 @@ namespace Crest
             }
         }
 
+        static void UpdateGlobals(Material oceanMaterial)
+        {
+            {
+                // Unity is not setting the sun correctly both in scene view and before transparent pass. Use most
+                // likely sun candidate.
+                Shader.SetGlobalVector("_CrestWorldSpaceLightPos0", -RenderSettings.sun.transform.forward);
+                Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color * RenderSettings.sun.intensity);
+            }
+
+            // We will have the wrong color values if we do not use linear:
+            // https://forum.unity.com/threads/fragment-shader-output-colour-has-incorrect-values-when-hardcoded.377657/
+            Shader.SetGlobalColor("_CrestDiffuse", oceanMaterial.GetColor("_Diffuse").linear);
+            Shader.SetGlobalColor("_CrestDiffuseGrazing", oceanMaterial.GetColor("_DiffuseGrazing").linear);
+            Shader.SetGlobalColor("_CrestDiffuseShadow", oceanMaterial.GetColor("_DiffuseShadow").linear);
+            Shader.SetGlobalColor("_CrestSubSurfaceColour", oceanMaterial.GetColor("_SubSurfaceColour").linear);
+            Shader.SetGlobalFloat("_CrestSubSurfaceSun", oceanMaterial.GetFloat("_SubSurfaceSun"));
+            Shader.SetGlobalFloat("_CrestSubSurfaceBase", oceanMaterial.GetFloat("_SubSurfaceBase"));
+            Shader.SetGlobalFloat("_CrestSubSurfaceSunFallOff", oceanMaterial.GetFloat("_SubSurfaceSunFallOff"));
+
+            Helpers.SetGlobalKeyword("CREST_SUBSURFACESCATTERING_ON", oceanMaterial.IsKeywordEnabled("_SUBSURFACESCATTERING_ON"));
+            Helpers.SetGlobalKeyword("CREST_SHADOWS_ON", oceanMaterial.IsKeywordEnabled("_SHADOWS_ON"));
+        }
+
         internal static void UpdatePostProcessMaterial(
             Mode mode,
             Camera camera,
             PropertyWrapperMaterial underwaterPostProcessMaterialWrapper,
+            UnderwaterSphericalHarmonicsData sphericalHarmonicsData,
             bool isMeniscusEnabled,
             bool copyParamsFromOceanMaterial,
             bool debugViewPostProcessMask,
             bool debugViewStencil,
             int dataSliceOffset,
-            ref Material currentOceanMaterial
+            ref Material currentOceanMaterial,
+            bool setGlobalShaderData
         )
         {
             Material underwaterPostProcessMaterial = underwaterPostProcessMaterialWrapper.material;
@@ -284,6 +313,17 @@ namespace Crest
                     // Measured this at approx 0.05ms on Dell laptop.
                     underwaterPostProcessMaterial.CopyPropertiesFromMaterial(material);
                     currentOceanMaterial = material;
+
+                    if (setGlobalShaderData)
+                    {
+                        UpdateGlobals(material);
+                    }
+                }
+
+                if (setGlobalShaderData)
+                {
+                    Shader.SetGlobalVector("_CrestDepthFogDensity", dominantWaterBody == null
+                        ? OceanRenderer.Instance.UnderwaterDepthFogDensity : dominantWaterBody.UnderwaterDepthFogDensity);
                 }
 
                 underwaterPostProcessMaterial.SetVector("_DepthFogDensity", dominantWaterBody == null
@@ -297,6 +337,9 @@ namespace Crest
 
             // We use this for caustics to get the displacement.
             underwaterPostProcessMaterial.SetFloat(LodDataMgr.sp_LD_SliceIndex, 0);
+
+            // We sample shadows at the camera position. Pass a user defined slice offset for smoothing out detail.
+            Helpers.SetShaderInt(underwaterPostProcessMaterial, sp_CrestDataSliceOffset, dataSliceOffset, setGlobalShaderData);
 
             LodDataMgrAnimWaves.Bind(underwaterPostProcessMaterialWrapper);
             LodDataMgrSeaFloorDepth.Bind(underwaterPostProcessMaterialWrapper);
@@ -348,6 +391,19 @@ namespace Crest
                 );
 
                 underwaterPostProcessMaterial.SetVector(sp_HorizonNormal, projectedNormal);
+            }
+
+            // Compute ambient lighting SH.
+            {
+                // We could pass in a renderer which would prime this lookup. However it doesnt make sense to use an existing render
+                // at different position, as this would then thrash it and negate the priming functionality. We could create a dummy invis GO
+                // with a dummy Renderer which might be enough, but this is hacky enough that we'll wait for it to become a problem
+                // rather than add a pre-emptive hack.
+                UnityEngine.Profiling.Profiler.BeginSample("Underwater Sample Spherical Harmonics");
+                LightProbes.GetInterpolatedProbe(camera.transform.position, null, out var sphericalHarmonicsL2);
+                sphericalHarmonicsL2.Evaluate(sphericalHarmonicsData._shDirections, sphericalHarmonicsData._ambientLighting);
+                Helpers.SetShaderVector(underwaterPostProcessMaterial, sp_CrestAmbientLighting, sphericalHarmonicsData._ambientLighting[0], setGlobalShaderData);
+                UnityEngine.Profiling.Profiler.EndSample();
             }
         }
     }

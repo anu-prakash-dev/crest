@@ -140,8 +140,6 @@ namespace Crest
 #if UNITY_EDITOR
         List<Camera> _editorCameras = new List<Camera>();
 #endif
-        static readonly int sp_CrestAmbientLighting = Shader.PropertyToID("_CrestAmbientLighting");
-        static readonly int sp_CrestDataSliceOffset = Shader.PropertyToID("_CrestDataSliceOffset");
 
         // Use instance to denote whether this is active or not. Only one camera is supported.
         public static UnderwaterRenderer Instance { get; private set; }
@@ -242,50 +240,6 @@ namespace Crest
 
         void LateUpdate()
         {
-            // Compute ambient lighting SH.
-            {
-                // We could pass in a renderer which would prime this lookup. However it doesnt make sense to use an existing render
-                // at different position, as this would then thrash it and negate the priming functionality. We could create a dummy invis GO
-                // with a dummy Renderer which might be enough, but this is hacky enough that we'll wait for it to become a problem
-                // rather than add a pre-emptive hack.
-                UnityEngine.Profiling.Profiler.BeginSample("Underwater Sample Spherical Harmonics");
-                LightProbes.GetInterpolatedProbe(OceanRenderer.Instance.ViewCamera.transform.position, null, out var sphericalHarmonicsL2);
-                sphericalHarmonicsL2.Evaluate(_sphericalHarmonicsData._shDirections, _sphericalHarmonicsData._ambientLighting);
-                Shader.SetGlobalVector(sp_CrestAmbientLighting, _sphericalHarmonicsData._ambientLighting[0]);
-                UnityEngine.Profiling.Profiler.EndSample();
-            }
-
-            // We sample shadows at the camera position. Pass a user defined slice offset for smoothing out detail.
-            Shader.SetGlobalInt(sp_CrestDataSliceOffset, _filterOceanData);
-
-            // Set global shader data for those wanting to render underwater fog on transparent objects.
-            if (_enableShaderAPI)
-            {
-                var oceanMaterial = OceanRenderer.Instance.OceanMaterial;
-
-                Shader.SetGlobalVector("_CrestDepthFogDensity", oceanMaterial.GetVector("_DepthFogDensity"));
-                if (_enableShaderAPI)
-                {
-                    // Unity is not setting the sun correctly both in scene view and before transparent pass. Use most
-                    // likely sun candidate.
-                    Shader.SetGlobalVector("_CrestWorldSpaceLightPos0", -RenderSettings.sun.transform.forward);
-                    Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color * RenderSettings.sun.intensity);
-                }
-                // We'll have the wrong color values if we do not use linear:
-                // https://forum.unity.com/threads/fragment-shader-output-colour-has-incorrect-values-when-hardcoded.377657/
-                Shader.SetGlobalColor("_CrestDiffuse", oceanMaterial.GetColor("_Diffuse").linear);
-                Shader.SetGlobalColor("_CrestDiffuseGrazing", oceanMaterial.GetColor("_DiffuseGrazing").linear);
-                Shader.SetGlobalColor("_CrestDiffuseShadow", oceanMaterial.GetColor("_DiffuseShadow").linear);
-                Shader.SetGlobalColor("_CrestSubSurfaceColour", oceanMaterial.GetColor("_SubSurfaceColour").linear);
-                Shader.SetGlobalFloat("_CrestSubSurfaceSun", oceanMaterial.GetFloat("_SubSurfaceSun"));
-                Shader.SetGlobalFloat("_CrestSubSurfaceBase", oceanMaterial.GetFloat("_SubSurfaceBase"));
-                Shader.SetGlobalFloat("_CrestSubSurfaceSunFallOff", oceanMaterial.GetFloat("_SubSurfaceSunFallOff"));
-
-                Helpers.SetGlobalKeyword("CREST_SUBSURFACESCATTERING_ON", oceanMaterial.IsKeywordEnabled("_SUBSURFACESCATTERING_ON"));
-                Helpers.SetGlobalKeyword("CREST_SHADOWS_ON", oceanMaterial.IsKeywordEnabled("_SHADOWS_ON"));
-
-            }
-
             Helpers.SetGlobalKeyword("CREST_UNDERWATER_BEFORE_TRANSPARENT", _enableShaderAPI);
         }
 
