@@ -318,12 +318,12 @@ namespace Crest
             // Have to set these explicitly as the built-in transforms aren't in world-space for the blit function.
             if (XRHelpers.IsSinglePass)
             {
-                material.SetMatrix(sp_InvViewProjection, _gpuInverseViewProjectionMatrix);
-                material.SetMatrix(sp_InvViewProjectionRight, _gpuInverseViewProjectionMatrixRight);
+                material.SetMatrix(ShaderIDs._InvViewProjection, _gpuInverseViewProjectionMatrix);
+                material.SetMatrix(ShaderIDs._InvViewProjectionRight, _gpuInverseViewProjectionMatrixRight);
             }
             else
             {
-                material.SetMatrix(sp_InvViewProjection, _gpuInverseViewProjectionMatrix);
+                material.SetMatrix(ShaderIDs._InvViewProjection, _gpuInverseViewProjectionMatrix);
             }
         }
     }

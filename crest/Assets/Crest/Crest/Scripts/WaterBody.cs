@@ -141,7 +141,7 @@ namespace Crest
                 return;
             }
 
-            UnderwaterDepthFogDensity = _overrideMaterial.GetVector("_DepthFogDensity") * UnderwaterRenderer.DepthFogDensityFactor;
+            UnderwaterDepthFogDensity = _overrideMaterial.GetVector(OceanRenderer.ShaderIDs._DepthFogDensity) * UnderwaterRenderer.DepthFogDensityFactor;
             // Only run optimisation in play mode due to shared height above water.
             if (Application.isPlaying)
             {

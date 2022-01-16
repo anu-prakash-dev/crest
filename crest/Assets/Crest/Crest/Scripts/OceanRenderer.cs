@@ -410,6 +410,18 @@ namespace Crest
         readonly static int sp_CrestDepthTextureOffset = Shader.PropertyToID("_CrestDepthTextureOffset");
         readonly static int sp_ForceUnderwater = Shader.PropertyToID("_ForceUnderwater");
 
+        public static class ShaderIDs
+        {
+            public static readonly int _DepthFogDensity = Shader.PropertyToID("_DepthFogDensity");
+            public static readonly int _Diffuse = Shader.PropertyToID("_Diffuse");
+            public static readonly int _DiffuseGrazing = Shader.PropertyToID("_DiffuseGrazing");
+            public static readonly int _DiffuseShadow = Shader.PropertyToID("_DiffuseShadow");
+            public static readonly int _SubSurfaceColour = Shader.PropertyToID("_SubSurfaceColour");
+            public static readonly int _SubSurfaceSun = Shader.PropertyToID("_SubSurfaceSun");
+            public static readonly int _SubSurfaceBase = Shader.PropertyToID("_SubSurfaceBase");
+            public static readonly int _SubSurfaceSunFallOff = Shader.PropertyToID("_SubSurfaceSunFallOff");
+        }
+
 #if UNITY_EDITOR
         static float _lastUpdateEditorTime = -1f;
         public static float LastUpdateEditorTime => _lastUpdateEditorTime;
@@ -1183,7 +1195,7 @@ namespace Crest
             if (isUnderwaterActive)
             {
                 definitelyUnderwater = ViewerHeightAboveWater < -5f;
-                var density = UnderwaterDepthFogDensity = _material.GetVector("_DepthFogDensity") * UnderwaterRenderer.DepthFogDensityFactor;
+                var density = UnderwaterDepthFogDensity = _material.GetVector(ShaderIDs._DepthFogDensity) * UnderwaterRenderer.DepthFogDensityFactor;
                 // Only run optimisation in play mode due to shared height above water.
                 if (Application.isPlaying)
                 {

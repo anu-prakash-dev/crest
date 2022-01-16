@@ -15,13 +15,28 @@ namespace Crest
         internal const string k_KeywordDebugViewOceanMask = "_DEBUG_VIEW_OCEAN_MASK";
         internal const string k_KeywordDebugViewStencil = "_DEBUG_VIEW_STENCIL";
 
-        internal static readonly int sp_CrestCameraColorTexture = Shader.PropertyToID("_CrestCameraColorTexture");
-        internal static readonly int sp_CrestWaterVolumeStencil = Shader.PropertyToID("_CrestWaterVolumeStencil");
-        static readonly int sp_InvViewProjection = Shader.PropertyToID("_InvViewProjection");
-        static readonly int sp_InvViewProjectionRight = Shader.PropertyToID("_InvViewProjectionRight");
-        static readonly int sp_CrestAmbientLighting = Shader.PropertyToID("_CrestAmbientLighting");
-        static readonly int sp_HorizonNormal = Shader.PropertyToID("_HorizonNormal");
-        static readonly int sp_CrestDataSliceOffset = Shader.PropertyToID("_CrestDataSliceOffset");
+        public static partial class ShaderIDs
+        {
+            // Local
+            public static readonly int _HorizonNormal = Shader.PropertyToID("_HorizonNormal");
+
+            // Global
+            public static readonly int _CrestCameraColorTexture = Shader.PropertyToID("_CrestCameraColorTexture");
+            public static readonly int _CrestWaterVolumeStencil = Shader.PropertyToID("_CrestWaterVolumeStencil");
+            public static readonly int _CrestAmbientLighting = Shader.PropertyToID("_CrestAmbientLighting");
+            public static readonly int _CrestDataSliceOffset = Shader.PropertyToID("_CrestDataSliceOffset");
+            public static readonly int _CrestDepthFogDensity = Shader.PropertyToID("_CrestDepthFogDensity");
+            public static readonly int _CrestWorldSpaceLightPos0 = Shader.PropertyToID("_CrestWorldSpaceLightPos0");
+            public static readonly int _CrestLightColor0 = Shader.PropertyToID("_CrestLightColor0");
+            public static readonly int _CrestDiffuse = Shader.PropertyToID("_CrestDiffuse");
+            public static readonly int _CrestDiffuseGrazing = Shader.PropertyToID("_CrestDiffuseGrazing");
+            public static readonly int _CrestDiffuseShadow = Shader.PropertyToID("_CrestDiffuseShadow");
+            public static readonly int _CrestSubSurfaceColour = Shader.PropertyToID("_CrestSubSurfaceColour");
+            public static readonly int _CrestSubSurfaceSun = Shader.PropertyToID("_CrestSubSurfaceSun");
+            public static readonly int _CrestSubSurfaceBase = Shader.PropertyToID("_CrestSubSurfaceBase");
+            public static readonly int _CrestSubSurfaceSunFallOff = Shader.PropertyToID("_CrestSubSurfaceSunFallOff");
+        }
+
 
         // If changed then see how mode is used to select the front-face pass and whether a mapping is required.
         // :UnderwaterRenderer.Mode
@@ -49,7 +64,7 @@ namespace Crest
         );
         internal RenderTargetIdentifier _depthStencilTarget = new RenderTargetIdentifier
         (
-            sp_CrestWaterVolumeStencil,
+            ShaderIDs._CrestWaterVolumeStencil,
             0,
             CubemapFace.Unknown,
             -1
@@ -130,7 +145,7 @@ namespace Crest
                 descriptor.SetMSAASamples(_camera);
                 descriptor.bindMS = descriptor.msaaSamples > 1;
 
-                _underwaterEffectCommandBuffer.GetTemporaryRT(sp_CrestWaterVolumeStencil, descriptor);
+                _underwaterEffectCommandBuffer.GetTemporaryRT(ShaderIDs._CrestWaterVolumeStencil, descriptor);
 
                 // Use blit for MSAA. We should be able to use CopyTexture. Might be the following bug:
                 // https://issuetracker.unity3d.com/product/unity/issues/guid/1308132
@@ -169,14 +184,14 @@ namespace Crest
                 _underwaterEffectCommandBuffer.SetRenderTarget(_colorTarget);
             }
 
-            _underwaterEffectMaterial.SetTexture(sp_CrestCameraColorTexture, temporaryColorBuffer);
+            _underwaterEffectMaterial.SetTexture(ShaderIDs._CrestCameraColorTexture, temporaryColorBuffer);
 
             ExecuteEffect(_underwaterEffectCommandBuffer, _underwaterEffectMaterial.material);
 
             RenderTexture.ReleaseTemporary(temporaryColorBuffer);
             if (UseStencilBufferOnEffect)
             {
-                _underwaterEffectCommandBuffer.ReleaseTemporaryRT(sp_CrestWaterVolumeStencil);
+                _underwaterEffectCommandBuffer.ReleaseTemporaryRT(ShaderIDs._CrestWaterVolumeStencil);
             }
         }
 
@@ -248,19 +263,19 @@ namespace Crest
             {
                 // Unity is not setting the sun correctly both in scene view and before transparent pass. Use most
                 // likely sun candidate.
-                Shader.SetGlobalVector("_CrestWorldSpaceLightPos0", -RenderSettings.sun.transform.forward);
-                Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color.linear * RenderSettings.sun.intensity);
+                Shader.SetGlobalVector(ShaderIDs._CrestWorldSpaceLightPos0, -RenderSettings.sun.transform.forward);
+                Shader.SetGlobalColor(ShaderIDs._CrestLightColor0, RenderSettings.sun.color.linear * RenderSettings.sun.intensity);
             }
 
             // We will have the wrong color values if we do not use linear:
             // https://forum.unity.com/threads/fragment-shader-output-colour-has-incorrect-values-when-hardcoded.377657/
-            Shader.SetGlobalColor("_CrestDiffuse", oceanMaterial.GetColor("_Diffuse").linear);
-            Shader.SetGlobalColor("_CrestDiffuseGrazing", oceanMaterial.GetColor("_DiffuseGrazing").linear);
-            Shader.SetGlobalColor("_CrestDiffuseShadow", oceanMaterial.GetColor("_DiffuseShadow").linear);
-            Shader.SetGlobalColor("_CrestSubSurfaceColour", oceanMaterial.GetColor("_SubSurfaceColour").linear);
-            Shader.SetGlobalFloat("_CrestSubSurfaceSun", oceanMaterial.GetFloat("_SubSurfaceSun"));
-            Shader.SetGlobalFloat("_CrestSubSurfaceBase", oceanMaterial.GetFloat("_SubSurfaceBase"));
-            Shader.SetGlobalFloat("_CrestSubSurfaceSunFallOff", oceanMaterial.GetFloat("_SubSurfaceSunFallOff"));
+            Shader.SetGlobalColor(ShaderIDs._CrestDiffuse, oceanMaterial.GetColor(OceanRenderer.ShaderIDs._Diffuse).linear);
+            Shader.SetGlobalColor(ShaderIDs._CrestDiffuseGrazing, oceanMaterial.GetColor(OceanRenderer.ShaderIDs._DiffuseGrazing).linear);
+            Shader.SetGlobalColor(ShaderIDs._CrestDiffuseShadow, oceanMaterial.GetColor(OceanRenderer.ShaderIDs._DiffuseShadow).linear);
+            Shader.SetGlobalColor(ShaderIDs._CrestSubSurfaceColour, oceanMaterial.GetColor(OceanRenderer.ShaderIDs._SubSurfaceColour).linear);
+            Shader.SetGlobalFloat(ShaderIDs._CrestSubSurfaceSun, oceanMaterial.GetFloat(OceanRenderer.ShaderIDs._SubSurfaceSun));
+            Shader.SetGlobalFloat(ShaderIDs._CrestSubSurfaceBase, oceanMaterial.GetFloat(OceanRenderer.ShaderIDs._SubSurfaceBase));
+            Shader.SetGlobalFloat(ShaderIDs._CrestSubSurfaceSunFallOff, oceanMaterial.GetFloat(OceanRenderer.ShaderIDs._SubSurfaceSunFallOff));
 
             Helpers.SetGlobalKeyword("CREST_SUBSURFACESCATTERING_ON", oceanMaterial.IsKeywordEnabled("_SUBSURFACESCATTERING_ON"));
             Helpers.SetGlobalKeyword("CREST_SHADOWS_ON", oceanMaterial.IsKeywordEnabled("_SHADOWS_ON"));
@@ -322,11 +337,11 @@ namespace Crest
 
                 if (setGlobalShaderData)
                 {
-                    Shader.SetGlobalVector("_CrestDepthFogDensity", dominantWaterBody == null
+                    Shader.SetGlobalVector(ShaderIDs._CrestDepthFogDensity, dominantWaterBody == null
                         ? OceanRenderer.Instance.UnderwaterDepthFogDensity : dominantWaterBody.UnderwaterDepthFogDensity);
                 }
 
-                underwaterPostProcessMaterial.SetVector("_DepthFogDensity", dominantWaterBody == null
+                underwaterPostProcessMaterial.SetVector(OceanRenderer.ShaderIDs._DepthFogDensity, dominantWaterBody == null
                     ? OceanRenderer.Instance.UnderwaterDepthFogDensity : dominantWaterBody.UnderwaterDepthFogDensity);
             }
 
@@ -336,7 +351,7 @@ namespace Crest
             underwaterPostProcessMaterial.SetKeyword("CREST_MENISCUS", isMeniscusEnabled);
 
             // We sample shadows at the camera position. Pass a user defined slice offset for smoothing out detail.
-            Helpers.SetShaderInt(underwaterPostProcessMaterial, sp_CrestDataSliceOffset, dataSliceOffset, setGlobalShaderData);
+            Helpers.SetShaderInt(underwaterPostProcessMaterial, ShaderIDs._CrestDataSliceOffset, dataSliceOffset, setGlobalShaderData);
             // We use this for caustics to get the displacement.
             underwaterPostProcessMaterial.SetFloat(LodDataMgr.sp_LD_SliceIndex, 0);
 
@@ -389,7 +404,7 @@ namespace Crest
                     Vector3.Dot(Vector3.up, camera.transform.up)
                 );
 
-                underwaterPostProcessMaterial.SetVector(sp_HorizonNormal, projectedNormal);
+                underwaterPostProcessMaterial.SetVector(ShaderIDs._HorizonNormal, projectedNormal);
             }
 
             // Compute ambient lighting SH.
@@ -401,7 +416,7 @@ namespace Crest
                 UnityEngine.Profiling.Profiler.BeginSample("Underwater Sample Spherical Harmonics");
                 LightProbes.GetInterpolatedProbe(camera.transform.position, null, out var sphericalHarmonicsL2);
                 sphericalHarmonicsL2.Evaluate(sphericalHarmonicsData._shDirections, sphericalHarmonicsData._ambientLighting);
-                Helpers.SetShaderVector(underwaterPostProcessMaterial, sp_CrestAmbientLighting, sphericalHarmonicsData._ambientLighting[0], setGlobalShaderData);
+                Helpers.SetShaderVector(underwaterPostProcessMaterial, ShaderIDs._CrestAmbientLighting, sphericalHarmonicsData._ambientLighting[0], setGlobalShaderData);
                 UnityEngine.Profiling.Profiler.EndSample();
             }
         }

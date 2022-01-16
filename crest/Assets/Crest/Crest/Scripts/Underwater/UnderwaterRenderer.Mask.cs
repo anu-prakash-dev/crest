@@ -27,12 +27,20 @@ namespace Crest
         internal const string k_ComputeShaderFillMaskArtefacts = "CrestFillMaskArtefacts";
         internal const string k_ComputeShaderKernelFillMaskArtefacts = "FillMaskArtefacts";
 
-        public static readonly int sp_CrestOceanMaskTexture = Shader.PropertyToID("_CrestOceanMaskTexture");
-        public static readonly int sp_CrestOceanMaskDepthTexture = Shader.PropertyToID("_CrestOceanMaskDepthTexture");
-        public static readonly int sp_CrestWaterVolumeFrontFaceTexture = Shader.PropertyToID("_CrestWaterVolumeFrontFaceTexture");
-        public static readonly int sp_CrestWaterVolumeBackFaceTexture = Shader.PropertyToID("_CrestWaterVolumeBackFaceTexture");
-        public static readonly int sp_FarPlaneOffset = Shader.PropertyToID("_FarPlaneOffset");
-        public static readonly int sp_MaskBelowSurface = Shader.PropertyToID("_MaskBelowSurface");
+        public static partial class ShaderIDs
+        {
+            // Local
+            public static readonly int _InvViewProjection = Shader.PropertyToID("_InvViewProjection");
+            public static readonly int _InvViewProjectionRight = Shader.PropertyToID("_InvViewProjectionRight");
+            public static readonly int _FarPlaneOffset = Shader.PropertyToID("_FarPlaneOffset");
+            public static readonly int _MaskBelowSurface = Shader.PropertyToID("_MaskBelowSurface");
+
+            // Global
+            public static readonly int _CrestOceanMaskTexture = Shader.PropertyToID("_CrestOceanMaskTexture");
+            public static readonly int _CrestOceanMaskDepthTexture = Shader.PropertyToID("_CrestOceanMaskDepthTexture");
+            public static readonly int _CrestWaterVolumeFrontFaceTexture = Shader.PropertyToID("_CrestWaterVolumeFrontFaceTexture");
+            public static readonly int _CrestWaterVolumeBackFaceTexture = Shader.PropertyToID("_CrestWaterVolumeBackFaceTexture");
+        }
 
         internal enum VolumePass
         {
@@ -237,7 +245,7 @@ namespace Crest
             // Support RTHandle scaling.
             if (targetSize != Vector2Int.zero) buffer.SetViewport(new Rect(0f, 0f, targetSize.x, targetSize.y));
             buffer.ClearRenderTarget(true, false, Color.black);
-            buffer.SetGlobalTexture(sp_CrestWaterVolumeFrontFaceTexture, frontTarget);
+            buffer.SetGlobalTexture(ShaderIDs._CrestWaterVolumeFrontFaceTexture, frontTarget);
             if (_mode == Mode.Portal) buffer.SetInvertCulling(_invertCulling);
             buffer.DrawMesh
             (
@@ -257,7 +265,7 @@ namespace Crest
                 // Support RTHandle scaling.
                 if (targetSize != Vector2Int.zero) buffer.SetViewport(new Rect(0f, 0f, targetSize.x, targetSize.y));
                 buffer.ClearRenderTarget(true, false, Color.black);
-                buffer.SetGlobalTexture(sp_CrestWaterVolumeBackFaceTexture, backTarget);
+                buffer.SetGlobalTexture(ShaderIDs._CrestWaterVolumeBackFaceTexture, backTarget);
                 buffer.DrawMesh
                 (
                     _volumeGeometry.sharedMesh,
@@ -276,8 +284,8 @@ namespace Crest
             // When using the stencil we are already clearing depth and do not want to clear the stencil too. Clear
             // color only when using the stencil as the horizon effectively clears it when not using it.
             buffer.ClearRenderTarget(!UseStencilBufferOnMask, UseStencilBufferOnMask, Color.black);
-            buffer.SetGlobalTexture(sp_CrestOceanMaskTexture, maskTarget);
-            buffer.SetGlobalTexture(sp_CrestOceanMaskDepthTexture, depthTarget);
+            buffer.SetGlobalTexture(ShaderIDs._CrestOceanMaskTexture, maskTarget);
+            buffer.SetGlobalTexture(ShaderIDs._CrestOceanMaskDepthTexture, depthTarget);
         }
 
         internal void FixMaskArtefacts(CommandBuffer buffer, RenderTextureDescriptor descriptor, RenderTargetIdentifier target)
@@ -287,7 +295,7 @@ namespace Crest
                 return;
             }
 
-            buffer.SetComputeTextureParam(_fixMaskComputeShader, _fixMaskKernel, sp_CrestOceanMaskTexture, target);
+            buffer.SetComputeTextureParam(_fixMaskComputeShader, _fixMaskKernel, ShaderIDs._CrestOceanMaskTexture, target);
             _fixMaskComputeShader.SetKeyword("STEREO_INSTANCING_ON", XRHelpers.IsSinglePass);
 
             buffer.DispatchCompute
@@ -330,7 +338,7 @@ namespace Crest
 
                 // Take 0-1 linear depth and convert non-linear depth. Scripted for performance saving.
                 var farPlaneLerp = (1f - zBufferParamsY * farPlaneMultiplier) / (zBufferParamsX * farPlaneMultiplier);
-                oceanMaskMaterial.SetFloat(sp_FarPlaneOffset, farPlaneLerp);
+                oceanMaskMaterial.SetFloat(ShaderIDs._FarPlaneOffset, farPlaneLerp);
 
                 // Render fullscreen triangle with horizon mask pass.
                 commandBuffer.DrawProcedural(Matrix4x4.identity, oceanMaskMaterial, shaderPass: k_ShaderPassOceanHorizonMask, MeshTopology.Triangles, 3, 1);
@@ -356,7 +364,7 @@ namespace Crest
                         }
 
                         // Handle culled tiles for when underwater is rendered before the transparent pass.
-                        chunk._mpb.SetFloat(sp_MaskBelowSurface, renderer.enabled ? k_MaskBelowSurface : k_MaskBelowSurfaceCull);
+                        chunk._mpb.SetFloat(ShaderIDs._MaskBelowSurface, renderer.enabled ? k_MaskBelowSurface : k_MaskBelowSurfaceCull);
                         renderer.SetPropertyBlock(chunk._mpb.materialPropertyBlock);
 
                         commandBuffer.DrawRenderer(renderer, oceanMaskMaterial, submeshIndex: 0, shaderPass: k_ShaderPassOceanSurfaceMask);
