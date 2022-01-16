@@ -521,7 +521,7 @@ Shader "Crest/Ocean"
 				float rawDepth = CREST_SAMPLE_SCENE_DEPTH_X(uvDepth);
 				float sceneZ = CrestLinearEyeDepth(rawDepth);
 
-				float3 lightDir = CrestWorldSpaceLightDir(input.worldPos);
+				float3 lightDir = WaveHarmonic::Crest::WorldSpaceLightDir(input.worldPos);
 				half3 lightCol = _LightColor0;
 				// Soft shadow, hard shadow
 				fixed2 shadow = (fixed2)1.0
@@ -652,7 +652,7 @@ Shader "Crest/Ocean"
 #if CREST_UNDERWATER_BEFORE_TRANSPARENT
 					underwater ? _CrestAmbientLighting :
 #endif
-					AmbientLight(),
+					WaveHarmonic::Crest::AmbientLight(),
 					lightDir,
 					lightCol,
 					underwater

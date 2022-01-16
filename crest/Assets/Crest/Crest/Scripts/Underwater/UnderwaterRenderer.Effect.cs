@@ -335,11 +335,10 @@ namespace Crest
             underwaterPostProcessMaterial.SetKeyword(k_KeywordDebugViewStencil, debugViewStencil);
             underwaterPostProcessMaterial.SetKeyword("CREST_MENISCUS", isMeniscusEnabled);
 
-            // We use this for caustics to get the displacement.
-            underwaterPostProcessMaterial.SetFloat(LodDataMgr.sp_LD_SliceIndex, 0);
-
             // We sample shadows at the camera position. Pass a user defined slice offset for smoothing out detail.
             Helpers.SetShaderInt(underwaterPostProcessMaterial, sp_CrestDataSliceOffset, dataSliceOffset, setGlobalShaderData);
+            // We use this for caustics to get the displacement.
+            underwaterPostProcessMaterial.SetFloat(LodDataMgr.sp_LD_SliceIndex, 0);
 
             LodDataMgrAnimWaves.Bind(underwaterPostProcessMaterialWrapper);
             LodDataMgrSeaFloorDepth.Bind(underwaterPostProcessMaterialWrapper);

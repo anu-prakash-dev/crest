@@ -355,6 +355,7 @@ namespace Crest
                             chunk.BindOceanData(camera);
                         }
 
+                        // Handle culled tiles for when underwater is rendered before the transparent pass.
                         chunk._mpb.SetFloat(sp_MaskBelowSurface, renderer.enabled ? k_MaskBelowSurface : k_MaskBelowSurfaceCull);
                         renderer.SetPropertyBlock(chunk._mpb.materialPropertyBlock);
 

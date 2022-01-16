@@ -110,7 +110,7 @@ bool CrestApplyUnderwaterFog(const float2 positionNDC, const float3 positionWS, 
 	}
 
 	half3 lightColor = _LightColor0.rgb;
-	float3 lightDirection = CrestWorldSpaceLightDir(positionWS);
+	float3 lightDirection = WaveHarmonic::Crest::WorldSpaceLightDir(positionWS);
 	half3 view =  normalize(_WorldSpaceCameraPos - positionWS);
 
 	// Get the largest distance.
