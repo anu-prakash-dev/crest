@@ -249,7 +249,7 @@ namespace Crest
                 // Unity is not setting the sun correctly both in scene view and before transparent pass. Use most
                 // likely sun candidate.
                 Shader.SetGlobalVector("_CrestWorldSpaceLightPos0", -RenderSettings.sun.transform.forward);
-                Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color * RenderSettings.sun.intensity);
+                Shader.SetGlobalColor("_CrestLightColor0", RenderSettings.sun.color.linear * RenderSettings.sun.intensity);
             }
 
             // We will have the wrong color values if we do not use linear:

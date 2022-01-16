@@ -141,6 +141,8 @@ namespace Crest
         List<Camera> _editorCameras = new List<Camera>();
 #endif
 
+        bool _currentEnableShaderAPI;
+
         // Use instance to denote whether this is active or not. Only one camera is supported.
         public static UnderwaterRenderer Instance { get; private set; }
 
@@ -212,6 +214,8 @@ namespace Crest
             _camera.AddCommandBuffer(CameraEvent.BeforeForwardAlpha, _oceanMaskCommandBuffer);
             _camera.AddCommandBuffer(_enableShaderAPI ? CameraEvent.BeforeForwardAlpha : CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
 
+            _currentEnableShaderAPI = _enableShaderAPI;
+
 #if UNITY_EDITOR
             EnableEditMode();
 #endif
@@ -241,6 +245,18 @@ namespace Crest
         void LateUpdate()
         {
             Helpers.SetGlobalKeyword("CREST_UNDERWATER_BEFORE_TRANSPARENT", _enableShaderAPI);
+
+            if (_enableShaderAPI != _currentEnableShaderAPI && _underwaterEffectCommandBuffer != null)
+            {
+                _camera.RemoveCommandBuffer(CameraEvent.BeforeForwardAlpha, _underwaterEffectCommandBuffer);
+                _camera.RemoveCommandBuffer(CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
+                _camera.AddCommandBuffer(_enableShaderAPI ? CameraEvent.BeforeForwardAlpha : CameraEvent.AfterForwardAlpha, _underwaterEffectCommandBuffer);
+                _currentEnableShaderAPI = _enableShaderAPI;
+#if UNITY_EDITOR
+                DisableEditMode();
+                EnableEditMode();
+#endif
+            }
         }
 
         void OnPreRender()
