@@ -132,6 +132,28 @@ This feature also clips the ocean surface to match.
 A common use case would be a window on a boat.
 
 
+.. _underwater-shader-api:
+
+Shader API
+^^^^^^^^^^
+
+.. admonition:: Preview
+
+   This feature is in preview and may change in the future.
+
+The underwater effect uses the opaque scene depths in order to render the water fog, which will not include transparents, and thus transparent objects will be fogged incorrectly.
+The Shader API addresses this problem by providing an HLSL includes file (built-in) or a Shader Graph node (HDRP and URP) to apply the underwater fog manually to your shaders.
+
+.. TODO: Refer to examples
+
+One limitation is that a transparent object representing a volume of air cannot be fogged correctly.
+The fog behind the object will be too strong as we cannot take the thickness of objects into account.
+
+.. sponsor::
+
+   Sponsoring us will help increase our development bandwidth which could work towards solving the aforementioned limitation.
+
+
 .. only:: hdrp
 
    Underwater Post-Process `[HDRP]`

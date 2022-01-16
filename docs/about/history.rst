@@ -21,6 +21,7 @@ Preview
    -  Add portals and volumes to *Underwater Renderer* (affects both underwater and ocean surface).
       See :ref:`portals-volumes` for more information.
    -  Add *Albedo Data* feature which allows layering colour onto the water surface similar to decals.
+   -  Add :ref:`underwater-shader-api` to *Underwater Renderer* to manually render the underwater effect onto transparent objects.
 
 Changed
 ^^^^^^^

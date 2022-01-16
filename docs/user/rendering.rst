@@ -38,6 +38,8 @@ On the other hand, alpha test / alpha cutout shaders are effectively opaque from
 Transparent Object Underwater
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. TODO: Link to underwater shader API section here as a preferred solution.
+
 This is tricky because the underwater effect uses the opaque scene depths in order to render the water fog, which will not include transparents.
 
 The following only applies to the *Underwater Renderer*.
