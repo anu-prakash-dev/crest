@@ -50,6 +50,7 @@ namespace Crest.Examples
 
         void Cycle(bool isReverse = false)
         {
+            var hasActive = false;
             var previous = transform.GetChild(transform.childCount - 1);
             foreach (Transform current in transform)
             {
@@ -59,6 +60,7 @@ namespace Crest.Examples
                     {
                         current.gameObject.SetActive(false);
                         previous.gameObject.SetActive(true);
+                        hasActive = true;
                         break;
                     }
                 }
@@ -68,11 +70,17 @@ namespace Crest.Examples
                     {
                         previous.gameObject.SetActive(false);
                         current.gameObject.SetActive(true);
+                        hasActive = true;
                         break;
                     }
                 }
 
                 previous = current;
+            }
+
+            if (!hasActive)
+            {
+                transform.GetChild(0).gameObject.SetActive(true);
             }
         }
     }
