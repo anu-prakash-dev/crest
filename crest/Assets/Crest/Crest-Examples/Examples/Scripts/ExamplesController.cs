@@ -7,12 +7,12 @@ namespace Crest.Examples
     using UnityEditor;
     using UnityEngine;
 
-    public class CycleChildren : MonoBehaviour
+    public class ExamplesController : MonoBehaviour
     {
-        [SerializeField, Predicated(typeof(CycleChildren), "IsController"), DecoratedField]
+        [SerializeField, Predicated(typeof(ExamplesController), "IsController"), DecoratedField]
         KeyCode _previous = KeyCode.Comma;
 
-        [SerializeField, Predicated(typeof(CycleChildren), "IsController"), DecoratedField]
+        [SerializeField, Predicated(typeof(ExamplesController), "IsController"), DecoratedField]
         KeyCode _next = KeyCode.Period;
 
         public void Previous() => Cycle(true);
@@ -51,7 +51,7 @@ namespace Crest.Examples
         // Called by Predicated attribute. Signature must not be changed.
         bool IsController(Component component)
         {
-            return transform.parent == null || !transform.parent.TryGetComponent<CycleChildren>(out _);
+            return transform.parent == null || !transform.parent.TryGetComponent<ExamplesController>(out _);
         }
 
         internal void Cycle(bool isReverse = false)
@@ -93,16 +93,16 @@ namespace Crest.Examples
         }
     }
 
-    [CustomEditor(typeof(CycleChildren))]
-    public class CycleChildrenEditor : Editor
+    [CustomEditor(typeof(ExamplesController))]
+    public class ExamplesControllerEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            var target = this.target as CycleChildren;
+            var target = this.target as ExamplesController;
 
-            if (target.transform.parent != null && target.transform.parent.TryGetComponent<CycleChildren>(out var parent))
+            if (target.transform.parent != null && target.transform.parent.TryGetComponent<ExamplesController>(out var parent))
             {
                 target = parent;
             }
