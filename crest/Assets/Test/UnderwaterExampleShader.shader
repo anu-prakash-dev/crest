@@ -3,6 +3,7 @@ Shader "Unlit/UnderwaterTransparentShader"
 	Properties
 	{
 		_Color ("Color", Color) = (0.5, 0.5, 0.5, 0.5)
+		_FogMultiplier ("Fog Multiplier", Range(0, 1)) = 1.0
 	}
 	SubShader
 	{
@@ -46,6 +47,7 @@ Shader "Unlit/UnderwaterTransparentShader"
 			float4 _Color;
 			float _Metallic;
 			float _Smoothness;
+			half _FogMultiplier;
 
 			v2f vert (appdata v)
 			{
@@ -63,7 +65,7 @@ Shader "Unlit/UnderwaterTransparentShader"
 				float2 positionNDC = i.screenPos.xy / i.screenPos.w;
 
 				// Only apply underwater fog when underwater. Otherwise, apply Unity fog.
-				if (!CrestApplyUnderwaterFog(positionNDC, i.worldPos, i.vertex.z, color.rgb))
+				if (!CrestApplyUnderwaterFog(positionNDC, i.worldPos, i.vertex.z, _FogMultiplier, color.rgb))
 				{
 					UNITY_APPLY_FOG(i.fogCoord, color);
 				}

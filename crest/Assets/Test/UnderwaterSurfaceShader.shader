@@ -5,6 +5,7 @@ Shader "Custom/UnderwaterSurfaceShader"
         _Color ("Color", Color) = (1,1,1,1)
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
+        _FogMultiplier ("Fog Multiplier", Range(0, 1)) = 1.0
     }
     SubShader
     {
@@ -37,6 +38,7 @@ Shader "Custom/UnderwaterSurfaceShader"
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
+        half _FogMultiplier;
 
         void Vertex (inout appdata_full v, out Input o)
         {
@@ -49,7 +51,7 @@ Shader "Custom/UnderwaterSurfaceShader"
             float2 positionNDC = IN.screenPos.xy / IN.screenPos.w;
             float deviceDepth = IN.screenPos.z / IN.screenPos.w;
 
-            if (!CrestApplyUnderwaterFog(positionNDC, IN.worldPos, deviceDepth, color.rgb))
+            if (!CrestApplyUnderwaterFog(positionNDC, IN.worldPos, deviceDepth, _FogMultiplier, color.rgb))
             {
                 UNITY_APPLY_FOG(IN.fogCoord, color);
             }
