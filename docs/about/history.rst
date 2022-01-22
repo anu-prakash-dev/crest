@@ -18,7 +18,7 @@ Breaking
 .. bullet_list::
 
    -  Ocean inputs will now only execute the first shader pass (pass zero).
-      Before all passes were executed in sequence which caused incompatibilities with unlit *Shader Graph*.
+      Before all passes were executed in sequence which caused incompatibilities with `URP` unlit *Shader Graph*.
       This is only a concern to those who are using custom shaders with multiple passes which we believe is very few.
 
 Preview
@@ -88,7 +88,6 @@ Fixed
       Simulation frequency can be increased to improve result further, at the cost of more simulation steps per frame.
    -  Fix *Sphere Water Interaction* component not working in standalone builds.
    -  Fix pop/discontinuity issue with dynamic waves.
-   -  Fix ocean input incompatibilities with unlit *Shader Graph*.
 
    .. only:: birp
 
@@ -97,6 +96,10 @@ Fixed
    .. only:: birp or urp
 
       -  Fix *Underwater Renderer* high memory usage by reverting change of using temporary render textures. `[BIRP] [URP]`
+
+   .. only:: urp
+
+      -  Fix ocean input incompatibilities with unlit *Shader Graph*. `[URP]`
 
    .. only:: hdrp or urp
 

@@ -15,7 +15,7 @@ user input, as covered in this video:
 .. note::
 
    Inputs only execute the first shader pass (pass zero).
-   It is recommended to use unlit shaders or unlit *Shader Graphs* if not using one of ours.
+   It is recommended to use unlit shader templates or unlit *Shader Graph* (`URP` only) if not using one of ours.
 
 .. tip::
 
@@ -466,7 +466,7 @@ User Inputs
 .. note::
 
    Inputs only execute the first shader pass (pass zero).
-   It is recommended to use unlit shaders or unlit *Shader Graphs* if not using one of ours.
+   It is recommended to use unlit shader templates or unlit *Shader Graph* (`URP` only) if not using one of ours.
    Shaders provided by *Unity* generally will not work as their primary pass is not zero - even for unlit shaders.
 
 Any geometry or particle system can add colour to the water. It will be projected from a top down perspective onto the water surface.
