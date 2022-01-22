@@ -3,7 +3,7 @@ Shader "Crest/Inputs/Albedo/Color"
     Properties
     {
         _Texture("Albedo", 2D) = "white" {}
-        _Color("Tint", Color) = (1.0, 1.0, 1.0, 1.0)
+        _Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Enum(UnityEngine.Rendering.BlendMode)] _BlendModeSource("Source Blend Mode", Int) = 5
@@ -56,9 +56,9 @@ Shader "Crest/Inputs/Albedo/Color"
 
             fixed4 Fragment(Varyings i) : SV_Target
             {
-                fixed4 color = tex2D(_Texture, i.uv);
-                clip(color.a - _Cutoff);
-                return color * _Color * i.color;
+                fixed4 color = tex2D(_Texture, i.uv) * _Color;
+                clip(color.a - _Cutoff + 0.0001);
+                return color * i.color;
             }
             ENDCG
         }
