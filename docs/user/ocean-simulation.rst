@@ -12,6 +12,11 @@ user input, as covered in this video:
 
    Basics of Adding Ocean Inputs
 
+.. note::
+
+   Inputs only execute the first shader pass (pass zero).
+   It is recommended to use unlit shaders or unlit *Shader Graphs* if not using one of ours.
+
 .. tip::
 
    For inputs, you are not limited to only using a :link:`MeshRenderer <{UnityDocsLinkBase}class-MeshRenderer.html>`.
@@ -457,6 +462,12 @@ URP 2022 has a decal system but it does not support transparent surfaces like wa
 
 User Inputs
 ^^^^^^^^^^^
+
+.. note::
+
+   Inputs only execute the first shader pass (pass zero).
+   It is recommended to use unlit shaders or unlit *Shader Graphs* if not using one of ours.
+   Shaders provided by *Unity* generally will not work as their primary pass is not zero - even for unlit shaders.
 
 Any geometry or particle system can add colour to the water. It will be projected from a top down perspective onto the water surface.
 
